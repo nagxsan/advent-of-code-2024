@@ -1,6 +1,6 @@
 use std::{fs, process::exit};
 
-use regex::{Regex, RegexSet};
+use regex::Regex;
 
 fn read_input(path: &String) -> Result<String, String> {
     let data = match fs::read_to_string(path) {
@@ -33,6 +33,47 @@ fn main() {
             .collect();
         
         ans += nums[0] * nums[1];
+    }
+
+    println!("Answer: {ans}");
+
+    let re_mul = Regex::new(r"mul\((\d+,\d+)\)").unwrap();
+    let re_do = Regex::new(r"do\(\)").unwrap();
+    let re_dont = Regex::new(r"don\'t\(\)").unwrap();
+
+    let mut matches_vec: Vec<(u32, String)> = vec![];
+    
+    for cap in re_mul.find_iter(&input) {
+        matches_vec.push((cap.start().try_into().unwrap(), cap.as_str().to_string()));
+    }
+
+    for cap in re_do.find_iter(&input) {
+        matches_vec.push((cap.start().try_into().unwrap(), cap.as_str().to_string()));
+    }
+
+    for cap in re_dont.find_iter(&input) {
+        matches_vec.push((cap.start().try_into().unwrap(), cap.as_str().to_string()));
+    }
+
+    matches_vec.sort_by_key(|k| k.0);
+
+    let mut do_flag= true;
+    let mut ans = 0;
+    for (_, m) in matches_vec {
+        if m == "don't()" {
+            do_flag = false;
+        } else if m == "do()" {
+            do_flag = true;
+        } else {
+            if do_flag {
+                let m_slice = &m[4..m.len() - 1];
+                let nums: Vec<i32> = m_slice
+                    .split(',')
+                    .map(|v| v.parse::<i32>().unwrap())
+                    .collect();
+                ans += nums[0] * nums[1];
+            }
+        }
     }
 
     println!("Answer: {ans}");
