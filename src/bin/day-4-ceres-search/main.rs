@@ -66,4 +66,35 @@ fn main() {
 
     println!("Answer: {ans}");
 
+    let mut masx = 0;
+    for i in 0..(x - 2) {
+        for j in 0..(y - 2) {
+            if input[i + 1][j + 1] == "A" {
+                if input[i][j] == "M" && 
+                    input[i][j + 2] == "M" &&
+                    input[i + 2][j] == "S" &&
+                    input[i + 2][j + 2] == "S" {
+                    masx += 1;
+                } else if input[i][j] == "M" && 
+                    input[i + 2][j] == "M" &&
+                    input[i][j + 2] == "S" &&
+                    input[i + 2][j + 2] == "S" {
+                    masx += 1
+                } else if input[i][j + 2] == "M" && 
+                    input[i + 2][j + 2] == "M" &&
+                    input[i][j] == "S" &&
+                    input[i + 2][j] == "S" {
+                    masx += 1
+                } else if input[i + 2][j + 2] == "M" && 
+                    input[i + 2][j] == "M" &&
+                    input[i][j] == "S" &&
+                    input[i][j + 2] == "S" {
+                    masx += 1
+                }
+            }
+        }
+    }
+
+    println!("Answer: {masx}");
+
 }
