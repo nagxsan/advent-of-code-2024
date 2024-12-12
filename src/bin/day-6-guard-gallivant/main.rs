@@ -1,7 +1,28 @@
-use std::{collections::HashMap, fs, process::exit};
+use std::{collections::{HashMap, HashSet}, fs, process::exit};
 
 fn is_cell_valid(cell: (i32, i32), rows: i32, cols: i32) -> bool {
     cell.0 >= 0 && cell.1 >= 0 && cell.0 < rows && cell.1 < cols
+}
+
+fn can_add_obstruction(
+    input: &Vec<Vec<&str>>,
+    r: usize,
+    c: usize,
+    dir: &str,
+    visited_obstructions: &HashSet<(i32, i32, &str)>,
+    dir_to_step: &HashMap<&str, (i32, i32)>,
+    rows: i32,
+    cols: i32
+) -> bool {
+    let step = *dir_to_step.get(dir).unwrap();
+    let mut cell: (i32, i32) = (r.try_into().unwrap(), c.try_into().unwrap());
+    while is_cell_valid(cell, rows, cols) {
+        if visited_obstructions.contains(&(cell.0, cell.1, dir)) {
+            return true;
+        }
+        cell = (cell.0 + step.0, cell.1 + step.1);
+    }
+    false
 }
 
 fn main() {
@@ -49,15 +70,21 @@ fn main() {
         ("L", (-1, 1))
     ]);
 
+    let mut starting_cell = (0, 0);
+
     for i in 0..rows {
         for j in 0..cols {
             if input[i][j] == "^" {
                 cell = (i as i32, j as i32);
+                starting_cell = (i as i32, j as i32);
             }
         }
     }
 
+    let mut visited_obstructions: HashSet<(i32, i32, &str)> = HashSet::new();
+
     let mut count_visited_cells = 0;
+    let mut new_obstructions: HashSet<(i32, i32)> = HashSet::new();
     while is_cell_valid(cell, rows.try_into().unwrap(), cols.try_into().unwrap()) {
         let r = cell.0 as usize;
         let c = cell.1 as usize;
@@ -69,10 +96,44 @@ fn main() {
                 exit(1);
             }
         };
+
+        visited_obstructions.insert((cell.0, cell.1, dir));
         
         if input[r][c] == "X" {
+            if can_add_obstruction(
+                &input,
+                r,
+                c,
+                rotate_dir.get(&dir).unwrap(),
+                &visited_obstructions,
+                &dir_to_step,
+                rows.try_into().unwrap(),
+                cols.try_into().unwrap()
+            ) {
+                let next_step = *dir_to_step.get(dir).unwrap();
+                let potential = (cell.0 + next_step.0, cell.1 + next_step.1);
+                if potential != starting_cell {
+                    new_obstructions.insert(potential);
+                }
+            }
             cell = (cell.0 + step.0, cell.1 + step.1);
         } else if input[r][c] == "." || input[r][c] == "^" {
+            if can_add_obstruction(
+                &input,
+                r,
+                c,
+                rotate_dir.get(&dir).unwrap(),
+                &visited_obstructions,
+                &dir_to_step,
+                rows.try_into().unwrap(),
+                cols.try_into().unwrap()
+            ) {
+                let next_step = *dir_to_step.get(dir).unwrap();
+                let potential = (cell.0 + next_step.0, cell.1 + next_step.1);
+                if potential != starting_cell {
+                    new_obstructions.insert(potential);
+                }
+            }
             count_visited_cells += 1;
             input[r][c] = "X";
 
@@ -97,5 +158,6 @@ fn main() {
     }
 
     println!("Part One answer: {count_visited_cells}");
+    println!("Part Two answer: {}", new_obstructions.len());
 
 }
