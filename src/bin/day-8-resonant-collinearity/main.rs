@@ -110,7 +110,7 @@ fn main() {
 
     for i in 0..rows {
         for j in 0..cols {
-            if input[i][j] == "#" {
+            if input[i][j] != "." {
                 part_two_answer += 1;
             }
         }
